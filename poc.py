@@ -32,7 +32,8 @@ class Keysniffer():
                                 pass
                         else:
                                 c1 = str(line[0])
-                                regex = re.compile('\([0-9A-Za-z]\)')
+                                character_re = re.compile('\([0-9A-Za-z]\)')
+                                special_re = re.compile('')
                                 name = str(line[2])
                                 if c1.isnumeric() and regex.match(name):
                                         self.keycodes[str(c1)] = line[2]
