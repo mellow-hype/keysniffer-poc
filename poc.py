@@ -15,19 +15,30 @@ class Keysniffer():
         def GetKeyCodes(self):
                 # Call xmodmap to get keycode mapping, pipe to stdout
                 modmap_out = subprocess.Popen(
-                        ('xmodmap', '-pm', '-pk'), stdout=subprocess.PIPE)
+                        ('xmodmap', '-pm', '-pk'), stdout=subprocess.PIPE,
+                        universal_newlines=True)
                 
-                # Call cut on xmodmap output to get codes column
-                cut_c1 = subprocess.check_output(
-                        ('cut', '-sf', '1'), stdin=modmap_out.stdout)
+                # Strip whitespaces from each line, then split into lines, and split
+                # those lines into lists.
+                codes = []
+                for line in modmap_out.stdout:
+                        codes.append(str(line).strip().split())
 
-                for line in cut_c1:
-                        self.keycodes = {str(line): ''}
-                print(self.keycodes)
-                
-
-        def CodeConverter():
-                pass
+                # Iterate through lines. If less than 3 objects in line, skip.
+                # If first item of remaining lines is numeric, assign it as key in KEYCODES
+                # dict, and assign the 3rd item as the value (3rd item is the name of the key)
+                for line in codes:
+                        if len(line) < 2:
+                                pass
+                        else:
+                                c1 = str(line[0])
+                                regex = re.compile('\([0-9A-Za-z]\)')
+                                name = str(line[2])
+                                if c1.isnumeric() and regex.match(name):
+                                        self.keycodes[str(c1)] = line[2]
+                        
+        def CodeConverter(self, code):
+                print(self.keycodes[str(code)])
 
         def Sniff():
                 pass
