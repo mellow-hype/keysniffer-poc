@@ -18,36 +18,43 @@ class Keysniffer():
                 Get keycode mapping using xmodmap and use codes as keys in a dict.
                 """
                 # Call xmodmap to get keycode mapping, pipe to stdout
-                modmap_out = subprocess.Popen(
-                        ('xmodmap', '-pm', '-pk'), stdout=subprocess.PIPE,
-                        universal_newlines=True)
-                
-                # Strip whitespaces from each line, then split into lines, and split
-                # those lines into lists.
+                modmap_out = subprocess.Popen(('xmodmap', '-pm', '-pk'), 
+                        stdout=subprocess.PIPE,
+                        universal_newlines=True
+                        )
+
+                # Iterate through output of xmodmap by line, split line into its items,
+                # and append that each list of items to codes[] list
                 codes = []
                 for line in modmap_out.stdout:
                         codes.append(str(line).strip().split())
 
-                # Iterate through lines. If less than 3 objects in line, skip.
-                # Create a list containing the keycode and value + second value if
-                # the string is longer than 4 objects
-                # final list will have format [code, val1, [val2]]
+                # Iterate through the resulting keycode list items
                 for line in codes:
+                        # Ignore lines with fewer than 2 values (each key from 
+                        # xmodmap out has min. of 3 values [code, hex, key])
                         if len(line) < 2:
                                 pass
                         else:
                                 c1 = str(line[0])
-                                if len(line) > 4:
-                                        code_str = [c1, line[2], line[4]]
-                                else:
-                                        code_str = [c1, line[2]]
+                                # if first item is numeric, its a keycode
                                 if c1.isnumeric():
+                                        # more than 4 items means there are 2 key values;
+                                        # keep both.      
+                                        if len(line) > 4: 
+                                                code_str = [c1, line[2], line[4]]
+                                        else: 
+                                                code_str = [c1, line[2]]
+                                        
+                                        # fill self.keycodes list with resulting list items.
+                                        # resulting items will have values in order
+                                        # [code, val1, val2]
                                         self.keycodes.append(code_str)
 
 
         def codesToKeys(self, codes):
                 """
-                Convert given list of keycodes to their respective values.
+                Take a list of codes and return the resulting string.
                 """
                 in_buffer = list(codes)
                 out_buffer = []
@@ -57,7 +64,7 @@ class Keysniffer():
        
         def keysToCodes(self, search):
                 """
-                Take a string and return a list character's keycodes
+                Take a string and return a list of each character's keycode
                 """
                 # iterate through characters in search string, if it is alphanumeric
                 # append parentheses to match xmonad format, and append that string to
