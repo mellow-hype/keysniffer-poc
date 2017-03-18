@@ -11,11 +11,14 @@ class Keysniffer():
                self.keyboard = self.getKeyboardID()
         
         def getKeyboardID(self):
+                """
+                Get the device ID for the keyboard from xinput
+                """
                 pass
 
         def getKeyCodes(self):
                 """
-                Get keycode mapping using xmodmap and use codes as keys in a dict.
+                Get keycode map using xmodmap and use codes as keys in a dict.
                 """
                 # Call xmodmap to get keycode mapping, pipe to stdout
                 modmap_out = subprocess.Popen(('xmodmap', '-pm', '-pk'), 
