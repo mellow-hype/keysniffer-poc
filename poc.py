@@ -89,14 +89,43 @@ class Keysniffer():
                                         self.keycodes.append(code_str)
 
 
+        def findKey(self, code):
+                """
+                Go through each code string in keycodes map looking for the matching code.
+                If the value at the matching code is a normal character, returns the stripped 
+                literal character. If the value of the code is Space, return a whitespace string.
+                """
+                for line in self.keycodes:
+                        # select line with matching code
+                        if line[0] == str(code):
+                                # alphanumeric chars will have a len of 3 since there are
+                                # in the format '(x)' at index [1] of the keycode line
+                                if len(line[1]) == 3:
+                                        return line[1]
+                                elif line[1] == '(Space)':
+                                        return ' '
+                                # if line[1] is greater than 3, it is a special key or 
+                                # a punctuation/special character.
+                                # TODO: implement function to convert basic special key/chars
+                                # key values to their literal representations 
+                                elif line[1] > 3:
+                                        pass
+                        else:
+                                continue
+
+
         def codesToKeys(self, codes):
                 """
                 Take a list of codes and return the resulting string.
                 """
                 in_buffer = list(codes)
                 out_buffer = []
-                for item in in_buffer:
-                        out_buffer.append(self.keycodes[str(item)])
+                for code in in_buffer:
+                        while str(code).isnumeric():
+                                out_buffer.append(self.findKey(code))
+
+                final_string = str().join(out_buffer)
+                return final_string
                 
        
         def keysToCodes(self, search):
