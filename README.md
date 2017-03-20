@@ -1,0 +1,2 @@
+# README
+A simple proof-of-concept Linux keysniffer using the technique discussed in [this article](http://theinvisiblethings.blogspot.com/2011/04/linux-security-circus-on-gui-isolation.html). Not meant to be anything super dangerous or useful at the moment, but we'll see where it goes.
