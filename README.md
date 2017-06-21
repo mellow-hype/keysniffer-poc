@@ -9,6 +9,8 @@ The lack of isolation between GUI objects in the X display server allows any pro
 
 This PoC keysniffer shows how an unprivileged user could run such a script and capture admin credentials or other private data on a shared system. As an experiment, one can run the script in one terminal window while using `su` to elevate privileges in another, for example. The script will capture all keystrokes, including the credentials used to elevate privileges.
 
+At the moment, it is not possible to run the script as a user that isn't connected to the X server and sniff keystrokes from other users who do have active displays. It *is* possible to run the script through a remote shell session and capture keystrokes from the active X session on the system, but only if the user account that executes the script is also the account that started the X session.
+
 ## Usage
 ```
 python3 poc.py
